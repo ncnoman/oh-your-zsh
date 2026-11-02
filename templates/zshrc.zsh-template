@@ -1,0 +1,33 @@
+# ==============================================================================
+#  .zshrc - Powered by Oh Your Zsh (OYZ)
+#  Fast, zero-dependency, zero-mystery shell configuration.
+#  https://github.com/ncnoman/oh-your-zsh
+# ==============================================================================
+
+# Path to your Oh Your Zsh installation
+export OYZ="$HOME/.oh-your-zsh"
+
+# Optional Theme: "default", "nord", "catppuccin", "monokai", "amber"
+# (Leave unset or "default" for the flagship cyan + lime/orange wedges)
+# export OYZ_THEME="default"
+
+# Optional Custom Color Overrides (256-color palette)
+# export OYZ_FG="0"
+# export OYZ_BG_VENV="201"
+# export OYZ_BG_DIR="33"
+# export OYZ_BG_GIT_CLEAN="120"
+# export OYZ_BG_GIT_DIRTY="208"
+
+# Optional Plugins: add only what you need
+# Built-ins: git, common-aliases
+plugins=(git common-aliases)
+
+# Load Oh Your Zsh
+source "$OYZ/oh-your-zsh.zsh"
+
+# ==============================================================================
+#  User Configuration & Personal Aliases
+# ==============================================================================
+
+# export PATH="$HOME/.local/bin:$PATH"
+# export EDITOR="vim"
