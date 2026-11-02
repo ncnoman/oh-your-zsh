@@ -25,9 +25,9 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # Native angled text pointers (100% core-safe, zero font dependencies)
 # Renders identically in all terminals without requiring patched Nerd/Powerline fonts.
-START_WEDGE="${OYZ_START_WEDGE:-◤}"
+START_WEDGE="${OYZ_START_WEDGE:-◥}"
 DIVIDER="${OYZ_DIVIDER:-◣}"
-END_WEDGE="${OYZ_END_WEDGE:-◥}"
+END_WEDGE="${OYZ_END_WEDGE:-◣}"
 
 # Colors (256-color palette compatible with all terminal emulators)
 # Easily override any of these in your ~/.zshrc prior to sourcing oh-your-zsh
