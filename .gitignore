@@ -2,3 +2,5 @@
 *.swp
 *~
 .zsh_history
+.idea/
+skills/

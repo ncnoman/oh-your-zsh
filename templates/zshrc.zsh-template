@@ -7,8 +7,15 @@
 # Path to your Oh Your Zsh installation
 export OYZ="$HOME/.oh-your-zsh"
 
+# Prompt Style:
+#   "blocks"  (Default) Pure ANSI background color blocks.
+#             100% full-height, zero font dependencies, zero gaps on any terminal.
+#   "pills"   Discrete tag badges with terminal background spacing.
+#   "wedges"  Angled Unicode triangles (◤, ◣, ◥) for terminals like iTerm2.
+#   "slanted" Classic Powerline chevrons (requires patched Nerd Font).
+export OYZ_STYLE="blocks"
+
 # Optional Theme: "default", "nord", "catppuccin", "monokai", "amber"
-# (Leave unset or "default" for the flagship cyan + lime/orange wedges)
 # export OYZ_THEME="default"
 
 # Optional Custom Color Overrides (256-color palette)

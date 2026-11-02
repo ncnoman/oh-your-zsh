@@ -23,11 +23,22 @@ setopt prompt_subst
 # Tell Python's activate script NOT to inject the plain text prompt
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 
-# Native angled text pointers (100% core-safe, zero font dependencies)
-# Renders identically in all terminals without requiring patched Nerd/Powerline fonts.
-START_WEDGE="${OYZ_START_WEDGE:-◥}"
+# ------------------------------------------------------------------------------
+# Prompt Style Configuration
+# Styles:
+#   - "blocks"  (Default) Pure ANSI background block switching.
+#               Zero font dependencies, 100% full line-height, zero vertical gaps
+#               across ALL terminals (Terminal.app, Zed, VS Code, Linux TTY).
+#   - "pills"   Discrete tag badges separated by terminal background spacing.
+#   - "wedges"  Angled Unicode triangles (◤, ◣, ◥) for terminals like iTerm2.
+#   - "slanted" Classic Powerline chevrons for systems with patched Nerd Fonts.
+# ------------------------------------------------------------------------------
+OYZ_STYLE="${OYZ_STYLE:-blocks}"
+
+# Native angled text pointers (for OYZ_STYLE="wedges")
+START_WEDGE="${OYZ_START_WEDGE:-◤}"
 DIVIDER="${OYZ_DIVIDER:-◣}"
-END_WEDGE="${OYZ_END_WEDGE:-◣}"
+END_WEDGE="${OYZ_END_WEDGE:-◥}"
 
 # Colors (256-color palette compatible with all terminal emulators)
 # Easily override any of these in your ~/.zshrc prior to sourcing oh-your-zsh
@@ -72,46 +83,98 @@ get_git_state() {
 
 # Core prompt renderer
 build_prompt() {
-  # 0. Dynamic Virtual Environment Segment (Pink Block)
-  if [[ -n "$VIRTUAL_ENV" ]]; then
-    # Extract just the folder name of the current environment (e.g., "foo")
-    local venv_name="${VIRTUAL_ENV:t}"
+  local style="${OYZ_STYLE:-blocks}"
 
-    # Start the prompt with the Pink block
-    print -n "%{%F{$BG_VENV}%}$START_WEDGE%{%K{$BG_VENV}%}%{%F{$FG}%}[$venv_name]"
-    # Connect pink block to cyan directory block with angled divider
-    print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$DIVIDER%{%F{$FG}%} %~ "
-  else
-    # 1. Directory Block (Cyan background)
-    print -n "%{%F{$BG_DIR}%}$START_WEDGE%{%K{$BG_DIR}%}%{%F{$FG}%} %~ "
+  # 1. Python Virtual Environment Segment
+  local venv_name=""
+  if [[ -n "$VIRTUAL_ENV" ]]; then
+    venv_name="${VIRTUAL_ENV:t}"
   fi
 
   # 2. Process Dynamic Git State Data
   local git_data=$(get_git_state)
+  local git_state="" git_icon="" git_name="" git_bg=""
   if [[ -n "$git_data" ]]; then
-    # Split the returned string by colons
     local parts=("${(@s.:.)git_data}")
-    local state="${parts[1]}"
-    local icon="${parts[2]}"
-    local name="${parts[3]}"
-
-    # 3. Pick layout and coloring depending on if files are modified
-    if [[ "$state" == "dirty" ]]; then
-      # Vibrant Orange background with custom state icons
-      print -n "%{%K{$BG_GIT_DIRTY}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $icon $name "
-      print -n "%{%k%f%}%{%F{$BG_GIT_DIRTY}%}$END_WEDGE%{%k%f%} "
+    git_state="${parts[1]}"
+    git_icon="${parts[2]}"
+    git_name="${parts[3]}"
+    if [[ "$git_state" == "dirty" ]]; then
+      git_bg="$BG_GIT_DIRTY"
     else
-      # Lime Green background with custom state icons
-      print -n "%{%K{$BG_GIT_CLEAN}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $icon $name "
-      print -n "%{%k%f%}%{%F{$BG_GIT_CLEAN}%}$END_WEDGE%{%k%f%} "
+      git_bg="$BG_GIT_CLEAN"
     fi
-  else
-    # Terminate Directory Block cleanly if outside a repo:
-    # Hard-clears background block, then colors the floating character Cyan
-    print -n "%{%k%f%}%{%F{$BG_DIR}%}$END_WEDGE%{%k%f%} "
   fi
 
-  # 4. Your preferred clean two-line break
+  # 3. Render Based on Selected Style
+  case "$style" in
+    blocks|pure|solid)
+      # Pure ANSI background block switching
+      # 100% full-height, zero font dependencies, zero gaps in any terminal
+      if [[ -n "$venv_name" ]]; then
+        print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] "
+      fi
+
+      print -n "%{%K{$BG_DIR}%F{$FG%}%} %~ "
+
+      if [[ -n "$git_data" ]]; then
+        print -n "%{%K{$git_bg}%F{$FG%}%} $git_icon $git_name "
+      fi
+
+      print -n "%{%k%f%}"
+      ;;
+
+    pills|badges)
+      # Discrete pill badges separated by terminal background spaces
+      if [[ -n "$venv_name" ]]; then
+        print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] %{%k%f%} "
+      fi
+
+      print -n "%{%K{$BG_DIR}%F{$FG%}%} %~ %{%k%f%}"
+
+      if [[ -n "$git_data" ]]; then
+        print -n " %{%K{$git_bg}%F{$FG%}%} $git_icon $git_name %{%k%f%}"
+      fi
+      ;;
+
+    wedges|triangles)
+      # Angled Unicode triangles (◤, ◣, ◥)
+      # Ideal for terminals (like iTerm2) with custom triangle glyph engines
+      if [[ -n "$venv_name" ]]; then
+        print -n "%{%F{$BG_VENV}%}$START_WEDGE%{%K{$BG_VENV}%}%{%F{$FG}%}[$venv_name]"
+        print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$DIVIDER%{%F{$FG}%} %~ "
+      else
+        print -n "%{%F{$BG_DIR}%}$START_WEDGE%{%K{$BG_DIR}%}%{%F{$FG}%} %~ "
+      fi
+
+      if [[ -n "$git_data" ]]; then
+        print -n "%{%K{$git_bg}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $git_icon $git_name "
+        print -n "%{%k%f%}%{%F{$git_bg}%}$END_WEDGE%{%k%f%} "
+      else
+        print -n "%{%k%f%}%{%F{$BG_DIR}%}$END_WEDGE%{%k%f%} "
+      fi
+      ;;
+
+    slanted|powerline)
+      # Powerline chevrons () for users with patched Nerd Fonts
+      local pl_sep=""
+      if [[ -n "$venv_name" ]]; then
+        print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] "
+        print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$pl_sep%{%F{$FG}%} %~ "
+      else
+        print -n "%{%K{$BG_DIR}%F{$FG%}%} %~ "
+      fi
+
+      if [[ -n "$git_data" ]]; then
+        print -n "%{%K{$git_bg}%F{$BG_DIR}%}$pl_sep%{%F{$FG}%} $git_icon $git_name "
+        print -n "%{%k%F{$git_bg}%}$pl_sep%{%k%f%} "
+      else
+        print -n "%{%k%F{$BG_DIR}%}$pl_sep%{%k%f%} "
+      fi
+      ;;
+  esac
+
+  # 4. Clean two-line break
   print -n "\n > "
 }
 
@@ -144,5 +207,5 @@ oyz_reload() {
 oyz_version() {
   local commit
   commit=$(command git -C "$OYZ" rev-parse --short HEAD 2>/dev/null || echo "release")
-  echo "oh-your-zsh version 1.0.0 ($commit)"
+  echo "oh-your-zsh version 1.1.0 ($commit)"
 }
