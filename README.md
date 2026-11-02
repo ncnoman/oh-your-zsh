@@ -6,23 +6,23 @@
 
 **A fast, beautiful shell prompt with zero font dependencies, zero black boxes, and sub-5ms startup times.**
 
-Built to replace Oh My Zsh for developers and team leads who are tired of broken fonts, vertical line gaps, slow terminals, and mysterious configuration bugs.
+Built to replace Oh My Zsh for developers and team leads who are tired of broken fonts, slow terminals, and mysterious configuration bugs.
 
 ---
 
 </div>
 
 ```text
- 1. Style "blocks" (Default - Pure ANSI background blocks, 100% full-height, zero font gaps):
+ 1. Style "wedges" (Default - Flagship angled text pointers):
+ ◤[api-env]◣ ~/repos/my-service ◣ ⑂ feat/auth ± ◥ 
+  > 
+
+ 2. Style "blocks" (Pure ANSI solid blocks, zero font gaps in all terminals):
  [api-env]  ~/repos/my-service  ⑂ feat/auth ± 
   > 
 
- 2. Style "pills" (Discrete spaced badges):
+ 3. Style "pills" (Discrete spaced badges):
  [api-env]   ~/repos/my-service   ⑂ feat/auth ± 
-  > 
-
- 3. Style "wedges" (Angled Unicode triangles for iTerm2):
- ◤[api-env]◣ ~/repos/my-service ◣ ⑂ feat/auth ± ◥ 
   > 
 ```
 
@@ -32,10 +32,9 @@ Built to replace Oh My Zsh for developers and team leads who are tired of broken
 
 If you have ever supported developers, maintained internal developer platforms, or managed a team's workstations, you know the **Oh My Zsh problem**:
 
-1. **The Font Trap & Triangle Rendering Gaps**:
+1. **The Font Trap**:
    - Themes like Agnoster or Powerlevel10k require custom patched Nerd Fonts (`Meslo`, `FiraCode NF`). Without them, prompts break into missing glyph boxes `[?]`.
-   - Even when using standard Unicode triangles (`◤`, `◣`, `◥`), **standard terminals like macOS Terminal.app or Zed treat them as ordinary typographic letters**. If your terminal's line-height is taller than the font's em-box, ugly vertical gaps appear above and below the wedges.
-   - **The Pure Code Solution**: Oh Your Zsh solves this by providing **pure ANSI background color block rendering (`OYZ_STYLE="blocks"`)**. By using native terminal background switching (`%K{...}` and spaces), the terminal draws 100% pixel-perfect, full-height blocks edge-to-edge. Zero font files, zero line-height gaps, zero alignment bugs.
+   - **The Oh Your Zsh Solution**: Uses native angled text pointers (`◤`, `◣`, `◥`), branching tracks (`⑂`), detached state indicator (`->`), and Git status modifier (`±`). It renders identically and gorgeously in standard fonts without downloading or patching fonts.
 2. **The "Black Box" Nightmare**:
    - Oh My Zsh contains over **100,000 lines of code across 300+ plugins**.
    - Obscure `precmd` hooks, magic paste handlers (`bracketed-paste-magic`), and auto-update daemons silently alter shell behavior.
@@ -45,8 +44,8 @@ If you have ever supported developers, maintained internal developer platforms, 
 
 ### The Oh Your Zsh Fix
 
-* **Pure ANSI Background Graphics**: Default `blocks` style uses pure ANSI color codes and standard spaces. Renders identically and gorgeously in **every terminal in existence** (macOS Terminal.app, Zed, iTerm2, VS Code terminal, Alacritty, Kitty, Linux virtual console / TTY) with zero font dependencies.
-* **Multiple Display Styles**: Choose between seamless `blocks`, spaced `pills`, angled `wedges`, or Powerline `slanted`.
+* **Native Angled Chevrons**: Uses 100% core-safe Unicode triangles (`◤`, `◣`, `◥`) creating forward-leaning parallel slashes (`/` `/` `/`) across every segment.
+* **Multiple Display Styles**: Choose between angled `wedges`, pure ANSI `blocks`, spaced `pills`, or Powerline `slanted`.
 * **Zero Mystery (< 100 lines of code)**: The core engine is a single, clean, readable shell script. Any team lead or developer can audit the entire system in 2 minutes. There are no background daemons, no silent network requests, and no secret hook overrides.
 * **Sub-5ms Instant Startup**: Pure native Zsh builtins and Git porcelain checks. No subshell cascades.
 * **Dynamic Git & Python Virtualenv Awareness**: Instant branch/commit tracking, clean (lime green) vs dirty (orange) background transitions, and integrated virtual environment detection with `VIRTUAL_ENV_DISABLE_PROMPT=1`.
@@ -89,7 +88,7 @@ You can keep your existing `~/.oh-my-zsh` folder intact and toggle between Oh My
 
    # --- Oh Your Zsh (Active) ---
    export OYZ="$HOME/.oh-your-zsh"
-   export OYZ_STYLE="blocks"  # "blocks", "pills", "wedges", or "slanted"
+   export OYZ_STYLE="wedges"  # "wedges", "blocks", "pills", or "slanted"
    source "$OYZ/oh-your-zsh.zsh"
    ```
 
@@ -130,14 +129,14 @@ To roll back at any time, run:
 Set `OYZ_STYLE` in your `~/.zshrc` before sourcing:
 
 ```zsh
-export OYZ_STYLE="blocks" # Options: "blocks", "pills", "wedges", "slanted"
+export OYZ_STYLE="wedges" # Options: "wedges", "blocks", "pills", "slanted"
 ```
 
 | Style | Description | Font Requirement |
 | :--- | :--- | :--- |
-| **`blocks`** *(Default)* | **Pure ANSI full-height color blocks**. Terminal draws edge-to-edge color with zero vertical seams or gaps. | **None (Pure ANSI)** |
+| **`wedges`** *(Default)* | **Flagship angled text pointers (`◤`, `◣`, `◥`)**. Parallel forward-leaning chevrons. | **Standard Unicode** |
+| **`blocks`** | Pure ANSI full-height solid color blocks with edge-to-edge rendering. | **None (Pure ANSI)** |
 | **`pills`** | Discrete modern badge pills with terminal background spacing. | **None (Pure ANSI)** |
-| **`wedges`** | Angled Unicode triangles (`◤`, `◣`, `◥`). Works best in terminals like iTerm2 that intercept glyph ranges. | Unicode font |
 | **`slanted`** | Powerline chevrons (`` / ``). | Patched Nerd Font |
 
 ### Color Themes (`OYZ_THEME`)
@@ -157,15 +156,6 @@ source "$HOME/.oh-your-zsh/oh-your-zsh.zsh"
 | **`monokai`** | Pink (`197`) | Bright Cyan (`81`) | Monokai Green (`148`)| Vivid Orange (`208`) |
 | **`amber`** | Gold (`214`) | Retro Amber (`178`)| Phosphor (`71`) | Rust (`166`) |
 
-### Direct Color Overrides
-
-```zsh
-export OYZ_BG_DIR="39"         # Custom blue for directory
-export OYZ_BG_GIT_CLEAN="76"    # Custom green for git clean
-export OYZ_BG_GIT_DIRTY="196"   # Custom red for git dirty
-source "$HOME/.oh-your-zsh/oh-your-zsh.zsh"
-```
-
 ---
 
 ## ⚡ Performance Comparison
@@ -176,7 +166,7 @@ Tested on macOS Apple Silicon and Linux:
 | :--- | :--- | :--- | :--- |
 | **Cold Startup Time** | ~320ms – 1,100ms | ~45ms | **< 4ms** |
 | **External Dependencies** | Git, Python/Ruby/Perl plugins, Curl | Rust binary + Nerd Font | **Zero (Native Zsh)** |
-| **Font Requirements** | Patched Nerd Fonts / Powerline | Patched Nerd Fonts | **None (Pure ANSI)** |
+| **Font Requirements** | Patched Nerd Fonts / Powerline | Patched Nerd Fonts | **None (Core Unicode)** |
 | **Codebase Size** | > 100,000 lines | > 40,000 lines (compiled) | **< 100 lines (Readable)** |
 | **Support Overhead** | High (plugins conflict, hooks clash) | Medium (binary updates) | **Zero (What you see is what runs)** |
 
@@ -202,10 +192,9 @@ source "$HOME/.oh-your-zsh/oh-your-zsh.zsh"
 
 ## 🛠 For Team Leads & System Administrators
 
-1. **Pixel-Perfect in All Terminals**: Whether team members use Terminal.app, Zed, VS Code, or SSH into a Linux node, `OYZ_STYLE="blocks"` never leaves font gaps or missing character squares.
-2. **Deterministic Onboarding**: No time wasted installing custom fonts, fixing iTerm2 settings, or resolving Oh My Zsh updater locks.
-3. **No Terminal Paste Corruption**: Permanently eliminates paste freezes and URL corruption via `zle_highlight+=(paste:none)`.
-4. **Virtualenv Cleanliness**: Enforces `export VIRTUAL_ENV_DISABLE_PROMPT=1` so Python virtual environments cleanly show inside the prompt without double prefixes.
+1. **Deterministic Onboarding**: No time wasted installing custom fonts, fixing iTerm2 settings, or resolving Oh My Zsh updater locks.
+2. **No Terminal Paste Corruption**: Permanently eliminates paste freezes and URL corruption via `zle_highlight+=(paste:none)`.
+3. **Virtualenv Cleanliness**: Enforces `export VIRTUAL_ENV_DISABLE_PROMPT=1` so Python virtual environments cleanly show inside the prompt without double prefixes.
 
 ---
 

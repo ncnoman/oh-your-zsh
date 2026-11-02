@@ -26,16 +26,15 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # ------------------------------------------------------------------------------
 # Prompt Style Configuration
 # Styles:
-#   - "blocks"  (Default) Pure ANSI background block switching.
-#               Zero font dependencies, 100% full line-height, zero vertical gaps
-#               across ALL terminals (Terminal.app, Zed, VS Code, Linux TTY).
+#   - "wedges"  (Default) Flagship native angled text pointers (◤, ◣, ◥).
+#               Parallel forward-slanted chevrons, 100% core-safe Unicode.
+#   - "blocks"  Pure ANSI full-height solid color blocks.
 #   - "pills"   Discrete tag badges separated by terminal background spacing.
-#   - "wedges"  Angled Unicode triangles (◤, ◣, ◥) for terminals like iTerm2.
-#   - "slanted" Classic Powerline chevrons for systems with patched Nerd Fonts.
+#   - "slanted" Classic Powerline chevrons (requires patched Nerd Font).
 # ------------------------------------------------------------------------------
-OYZ_STYLE="${OYZ_STYLE:-blocks}"
+OYZ_STYLE="${OYZ_STYLE:-wedges}"
 
-# Native angled text pointers (for OYZ_STYLE="wedges")
+# Native angled text pointers (100% core-safe, zero font dependencies)
 START_WEDGE="${OYZ_START_WEDGE:-◤}"
 DIVIDER="${OYZ_DIVIDER:-◣}"
 END_WEDGE="${OYZ_END_WEDGE:-◥}"
@@ -83,7 +82,7 @@ get_git_state() {
 
 # Core prompt renderer
 build_prompt() {
-  local style="${OYZ_STYLE:-blocks}"
+  local style="${OYZ_STYLE:-wedges}"
 
   # 1. Python Virtual Environment Segment
   local venv_name=""
@@ -108,9 +107,27 @@ build_prompt() {
 
   # 3. Render Based on Selected Style
   case "$style" in
+    wedges|triangles)
+      # Flagship Angled Text Pointers (◤, ◣, ◥)
+      # Perfectly parallel forward-slanted chevrons
+      if [[ -n "$venv_name" ]]; then
+        print -n "%{%F{$BG_VENV}%}$START_WEDGE%{%K{$BG_VENV}%}%{%F{$FG}%}[$venv_name]"
+        print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$DIVIDER%{%F{$FG}%} %~ "
+      else
+        print -n "%{%F{$BG_DIR}%}$START_WEDGE%{%K{$BG_DIR}%}%{%F{$FG}%} %~ "
+      fi
+
+      if [[ -n "$git_data" ]]; then
+        print -n "%{%K{$git_bg}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $git_icon $git_name "
+        print -n "%{%k%f%}%{%F{$git_bg}%}$END_WEDGE%{%k%f%} "
+      else
+        print -n "%{%k%f%}%{%F{$BG_DIR}%}$END_WEDGE%{%k%f%} "
+      fi
+      ;;
+
     blocks|pure|solid)
       # Pure ANSI background block switching
-      # 100% full-height, zero font dependencies, zero gaps in any terminal
+      # 100% full-height, zero font dependencies
       if [[ -n "$venv_name" ]]; then
         print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] "
       fi
@@ -134,24 +151,6 @@ build_prompt() {
 
       if [[ -n "$git_data" ]]; then
         print -n " %{%K{$git_bg}%F{$FG%}%} $git_icon $git_name %{%k%f%}"
-      fi
-      ;;
-
-    wedges|triangles)
-      # Angled Unicode triangles (◤, ◣, ◥)
-      # Ideal for terminals (like iTerm2) with custom triangle glyph engines
-      if [[ -n "$venv_name" ]]; then
-        print -n "%{%F{$BG_VENV}%}$START_WEDGE%{%K{$BG_VENV}%}%{%F{$FG}%}[$venv_name]"
-        print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$DIVIDER%{%F{$FG}%} %~ "
-      else
-        print -n "%{%F{$BG_DIR}%}$START_WEDGE%{%K{$BG_DIR}%}%{%F{$FG}%} %~ "
-      fi
-
-      if [[ -n "$git_data" ]]; then
-        print -n "%{%K{$git_bg}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $git_icon $git_name "
-        print -n "%{%k%f%}%{%F{$git_bg}%}$END_WEDGE%{%k%f%} "
-      else
-        print -n "%{%k%f%}%{%F{$BG_DIR}%}$END_WEDGE%{%k%f%} "
       fi
       ;;
 
@@ -186,16 +185,18 @@ PROMPT='$(build_prompt)'
 zle_highlight+=(paste:none)
 
 # Optional lightweight plugin loader (zero-mystery, opt-in)
-# If user specifies plugins=(git common-aliases) in their .zshrc
+# Scoped in an anonymous function to avoid printing variable assignments
 if [[ -n "${plugins[*]}" ]]; then
-  local plugin
-  for plugin in "${plugins[@]}"; do
-    if [[ -f "$OYZ/plugins/$plugin/$plugin.plugin.zsh" ]]; then
-      source "$OYZ/plugins/$plugin/$plugin.plugin.zsh"
-    elif [[ -f "$OYZ/custom/plugins/$plugin/$plugin.plugin.zsh" ]]; then
-      source "$OYZ/custom/plugins/$plugin/$plugin.plugin.zsh"
-    fi
-  done
+  () {
+    local plugin
+    for plugin in "${plugins[@]}"; do
+      if [[ -f "$OYZ/plugins/$plugin/$plugin.plugin.zsh" ]]; then
+        source "$OYZ/plugins/$plugin/$plugin.plugin.zsh"
+      elif [[ -f "$OYZ/custom/plugins/$plugin/$plugin.plugin.zsh" ]]; then
+        source "$OYZ/custom/plugins/$plugin/$plugin.plugin.zsh"
+      fi
+    done
+  }
 fi
 
 # Convenience helper functions
@@ -207,5 +208,5 @@ oyz_reload() {
 oyz_version() {
   local commit
   commit=$(command git -C "$OYZ" rev-parse --short HEAD 2>/dev/null || echo "release")
-  echo "oh-your-zsh version 1.1.0 ($commit)"
+  echo "oh-your-zsh version 1.1.1 ($commit)"
 }

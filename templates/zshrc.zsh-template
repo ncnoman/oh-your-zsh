@@ -8,12 +8,11 @@
 export OYZ="$HOME/.oh-your-zsh"
 
 # Prompt Style:
-#   "blocks"  (Default) Pure ANSI background color blocks.
-#             100% full-height, zero font dependencies, zero gaps on any terminal.
+#   "wedges"  (Default) Flagship angled text pointers (◤, ◣, ◥).
+#   "blocks"  Pure ANSI full-height solid color blocks.
 #   "pills"   Discrete tag badges with terminal background spacing.
-#   "wedges"  Angled Unicode triangles (◤, ◣, ◥) for terminals like iTerm2.
 #   "slanted" Classic Powerline chevrons (requires patched Nerd Font).
-export OYZ_STYLE="blocks"
+export OYZ_STYLE="wedges"
 
 # Optional Theme: "default", "nord", "catppuccin", "monokai", "amber"
 # export OYZ_THEME="default"
