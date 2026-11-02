@@ -8,7 +8,7 @@
 export OYZ="$HOME/.oh-your-zsh"
 
 # Prompt Style:
-#   "wedges"  (Default) Flagship angled text pointers (◤, ◣, ◥).
+#   "wedges"  (Default) Flagship angled text pointers (◥, ◣, ◣).
 #   "blocks"  Pure ANSI full-height solid color blocks.
 #   "pills"   Discrete tag badges with terminal background spacing.
 #   "slanted" Classic Powerline chevrons (requires patched Nerd Font).

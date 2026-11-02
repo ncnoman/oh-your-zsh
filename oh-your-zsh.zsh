@@ -26,7 +26,7 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 # ------------------------------------------------------------------------------
 # Prompt Style Configuration
 # Styles:
-#   - "wedges"  (Default) Flagship native angled text pointers (◤, ◣, ◥).
+#   - "wedges"  (Default) Flagship native angled text pointers (◥, ◣, ◣).
 #               Parallel forward-slanted chevrons, 100% core-safe Unicode.
 #   - "blocks"  Pure ANSI full-height solid color blocks.
 #   - "pills"   Discrete tag badges separated by terminal background spacing.
@@ -35,9 +35,9 @@ export VIRTUAL_ENV_DISABLE_PROMPT=1
 OYZ_STYLE="${OYZ_STYLE:-wedges}"
 
 # Native angled text pointers (100% core-safe, zero font dependencies)
-START_WEDGE="${OYZ_START_WEDGE:-◤}"
+START_WEDGE="${OYZ_START_WEDGE:-◥}"
 DIVIDER="${OYZ_DIVIDER:-◣}"
-END_WEDGE="${OYZ_END_WEDGE:-◥}"
+END_WEDGE="${OYZ_END_WEDGE:-◣}"
 
 # Colors (256-color palette compatible with all terminal emulators)
 # Easily override any of these in your ~/.zshrc prior to sourcing oh-your-zsh
