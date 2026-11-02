@@ -7,12 +7,13 @@
 # Path to your Oh Your Zsh installation
 export OYZ="$HOME/.oh-your-zsh"
 
-# Prompt Style:
-#   "wedges"  (Default) Flagship angled text pointers (◥, ◣, ◣).
-#   "blocks"  Pure ANSI full-height solid color blocks.
-#   "pills"   Discrete tag badges with terminal background spacing.
-#   "slanted" Classic Powerline chevrons (requires patched Nerd Font).
-export OYZ_STYLE="wedges"
+# Prompt Style (Adaptive by default):
+#   Unset/Auto : Automatically uses angled wedges (◥, ◣, ◣) in iTerm2, Ghostty,
+#                WezTerm, and Kitty, and falls back to full-height solid ANSI
+#                blocks in terminals where fonts leave gaps (Terminal.app, Zed, VS Code).
+#   "wedges"   : Force angled text pointers everywhere.
+#   "blocks"   : Force pure ANSI solid blocks everywhere.
+# export OYZ_STYLE="wedges"
 
 # Optional Theme: "default", "nord", "catppuccin", "monokai", "amber"
 # export OYZ_THEME="default"

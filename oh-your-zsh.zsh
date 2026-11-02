@@ -10,7 +10,7 @@ if [[ -z "$OYZ" ]]; then
   export OYZ="${0:A:h}"
 fi
 
-# Ensure Homebrew environment is loaded on macOS Apple Silicon if available
+# Ensure Homebrew environment is loaded on macOS if available
 if (( ! $+commands[brew] )) && [[ -x "/opt/homebrew/bin/brew" ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif (( ! $+commands[brew] )) && [[ -x "/usr/local/bin/brew" ]]; then
@@ -24,20 +24,30 @@ setopt prompt_subst
 export VIRTUAL_ENV_DISABLE_PROMPT=1
 
 # ------------------------------------------------------------------------------
-# Prompt Style Configuration
-# Styles:
-#   - "wedges"  (Default) Flagship native angled text pointers (◥, ◣, ◣).
-#               Parallel forward-slanted chevrons, 100% core-safe Unicode.
-#   - "blocks"  Pure ANSI full-height solid color blocks.
-#   - "pills"   Discrete tag badges separated by terminal background spacing.
-#   - "slanted" Classic Powerline chevrons (requires patched Nerd Font).
+# Adaptive Wedge / Block Engine
+# Automatically uses native angled wedges (◥, ◣, ◣) on terminals that render
+# geometric primitives edge-to-edge (iTerm2, Ghostty, WezTerm, Kitty), and
+# falls back to pure full-height ANSI color blocks on terminals where standard
+# fonts leave vertical gaps (Terminal.app, VS Code, Zed, Alacritty).
+#
+# Override anytime in ~/.zshrc with:
+#   export OYZ_STYLE="wedges"  (force angled wedges)
+#   export OYZ_STYLE="blocks"  (force flat ANSI blocks)
 # ------------------------------------------------------------------------------
-OYZ_STYLE="${OYZ_STYLE:-wedges}"
-
-# Native angled text pointers (100% core-safe, zero font dependencies)
-START_WEDGE="${OYZ_START_WEDGE:-◥}"
-DIVIDER="${OYZ_DIVIDER:-◣}"
-END_WEDGE="${OYZ_END_WEDGE:-◣}"
+if [[ "$OYZ_STYLE" == "wedges" ]] || { [[ "$OYZ_STYLE" != "blocks" ]] && {
+     [[ "$TERM_PROGRAM" == "iTerm.app" ]] || [[ -n "$ITERM_SESSION_ID" ]] ||
+     [[ "$TERM_PROGRAM" == "ghostty" ]]   || [[ -n "$GHOSTTY_RESOURCES_DIR" ]] ||
+     [[ "$TERM_PROGRAM" == "WezTerm" ]]   || [[ -n "$WEZTERM_EXECUTABLE" ]] ||
+     [[ "$TERM" == "xterm-kitty" ]]       || [[ -n "$KITTY_PID" ]];
+   }; }; then
+  START_WEDGE="${OYZ_START_WEDGE:-◥}"
+  DIVIDER="${OYZ_DIVIDER:-◣}"
+  END_WEDGE="${OYZ_END_WEDGE:-◣}"
+else
+  START_WEDGE="${OYZ_START_WEDGE:-}"
+  DIVIDER="${OYZ_DIVIDER:-}"
+  END_WEDGE="${OYZ_END_WEDGE:-}"
+fi
 
 # Colors (256-color palette compatible with all terminal emulators)
 # Easily override any of these in your ~/.zshrc prior to sourcing oh-your-zsh
@@ -82,96 +92,43 @@ get_git_state() {
 
 # Core prompt renderer
 build_prompt() {
-  local style="${OYZ_STYLE:-wedges}"
-
-  # 1. Python Virtual Environment Segment
-  local venv_name=""
+  # 0. Dynamic Virtual Environment Segment (Pink Block)
   if [[ -n "$VIRTUAL_ENV" ]]; then
-    venv_name="${VIRTUAL_ENV:t}"
+    # Extract just the folder name of the current environment (e.g., "foo")
+    local venv_name="${VIRTUAL_ENV:t}"
+
+    # Start the prompt with the Pink block and transition into Directory block
+    print -n "%{%F{$BG_VENV}%}$START_WEDGE%{%K{$BG_VENV}%}%{%F{$FG}%}[$venv_name]"
+    print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$DIVIDER%{%F{$FG}%} %~ "
+  else
+    # 1. Directory Block (Cyan background)
+    print -n "%{%F{$BG_DIR}%}$START_WEDGE%{%K{$BG_DIR}%}%{%F{$FG}%} %~ "
   fi
 
   # 2. Process Dynamic Git State Data
   local git_data=$(get_git_state)
-  local git_state="" git_icon="" git_name="" git_bg=""
   if [[ -n "$git_data" ]]; then
+    # Split the returned string by colons
     local parts=("${(@s.:.)git_data}")
-    git_state="${parts[1]}"
-    git_icon="${parts[2]}"
-    git_name="${parts[3]}"
-    if [[ "$git_state" == "dirty" ]]; then
-      git_bg="$BG_GIT_DIRTY"
+    local state="${parts[1]}"
+    local icon="${parts[2]}"
+    local name="${parts[3]}"
+
+    # 3. Pick layout and coloring depending on if files are modified
+    if [[ "$state" == "dirty" ]]; then
+      # Vibrant Orange background with custom state icons
+      print -n "%{%K{$BG_GIT_DIRTY}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $icon $name "
+      print -n "%{%k%f%}%{%F{$BG_GIT_DIRTY}%}$END_WEDGE%{%k%f%} "
     else
-      git_bg="$BG_GIT_CLEAN"
+      # Lime Green background with custom state icons
+      print -n "%{%K{$BG_GIT_CLEAN}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $icon $name "
+      print -n "%{%k%f%}%{%F{$BG_GIT_CLEAN}%}$END_WEDGE%{%k%f%} "
     fi
+  else
+    # Terminate Directory Block cleanly if outside a repo:
+    # Hard-clears background block, then colors the floating character Cyan
+    print -n "%{%k%f%}%{%F{$BG_DIR}%}$END_WEDGE%{%k%f%} "
   fi
-
-  # 3. Render Based on Selected Style
-  case "$style" in
-    wedges|triangles)
-      # Flagship Angled Text Pointers (◤, ◣, ◥)
-      # Perfectly parallel forward-slanted chevrons
-      if [[ -n "$venv_name" ]]; then
-        print -n "%{%F{$BG_VENV}%}$START_WEDGE%{%K{$BG_VENV}%}%{%F{$FG}%}[$venv_name]"
-        print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$DIVIDER%{%F{$FG}%} %~ "
-      else
-        print -n "%{%F{$BG_DIR}%}$START_WEDGE%{%K{$BG_DIR}%}%{%F{$FG}%} %~ "
-      fi
-
-      if [[ -n "$git_data" ]]; then
-        print -n "%{%K{$git_bg}%F{$BG_DIR}%}$DIVIDER%{%F{$FG}%} $git_icon $git_name "
-        print -n "%{%k%f%}%{%F{$git_bg}%}$END_WEDGE%{%k%f%} "
-      else
-        print -n "%{%k%f%}%{%F{$BG_DIR}%}$END_WEDGE%{%k%f%} "
-      fi
-      ;;
-
-    blocks|pure|solid)
-      # Pure ANSI background block switching
-      # 100% full-height, zero font dependencies
-      if [[ -n "$venv_name" ]]; then
-        print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] "
-      fi
-
-      print -n "%{%K{$BG_DIR}%F{$FG%}%} %~ "
-
-      if [[ -n "$git_data" ]]; then
-        print -n "%{%K{$git_bg}%F{$FG%}%} $git_icon $git_name "
-      fi
-
-      print -n "%{%k%f%}"
-      ;;
-
-    pills|badges)
-      # Discrete pill badges separated by terminal background spaces
-      if [[ -n "$venv_name" ]]; then
-        print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] %{%k%f%} "
-      fi
-
-      print -n "%{%K{$BG_DIR}%F{$FG%}%} %~ %{%k%f%}"
-
-      if [[ -n "$git_data" ]]; then
-        print -n " %{%K{$git_bg}%F{$FG%}%} $git_icon $git_name %{%k%f%}"
-      fi
-      ;;
-
-    slanted|powerline)
-      # Powerline chevrons () for users with patched Nerd Fonts
-      local pl_sep=""
-      if [[ -n "$venv_name" ]]; then
-        print -n "%{%K{$BG_VENV}%F{$FG%}%} [$venv_name] "
-        print -n "%{%K{$BG_DIR}%F{$BG_VENV}%}$pl_sep%{%F{$FG}%} %~ "
-      else
-        print -n "%{%K{$BG_DIR}%F{$FG%}%} %~ "
-      fi
-
-      if [[ -n "$git_data" ]]; then
-        print -n "%{%K{$git_bg}%F{$BG_DIR}%}$pl_sep%{%F{$FG}%} $git_icon $git_name "
-        print -n "%{%k%F{$git_bg}%}$pl_sep%{%k%f%} "
-      else
-        print -n "%{%k%F{$BG_DIR}%}$pl_sep%{%k%f%} "
-      fi
-      ;;
-  esac
 
   # 4. Clean two-line break
   print -n "\n > "
@@ -208,5 +165,5 @@ oyz_reload() {
 oyz_version() {
   local commit
   commit=$(command git -C "$OYZ" rev-parse --short HEAD 2>/dev/null || echo "release")
-  echo "oh-your-zsh version 1.1.1 ($commit)"
+  echo "oh-your-zsh version 1.2.0 ($commit)"
 }

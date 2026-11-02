@@ -1,6 +1,6 @@
 <div align="center">
 
-# ◤ Oh Your Zsh ◥
+# ◥ Oh Your Zsh ◣
 
 ### The Zero-Dependency, Zero-Mystery Shell Engine for Zsh
 
@@ -13,16 +13,12 @@ Built to replace Oh My Zsh for developers and team leads who are tired of broken
 </div>
 
 ```text
- 1. Style "wedges" (Default - Flagship angled text pointers):
- ◤[api-env]◣ ~/repos/my-service ◣ ⑂ feat/auth ± ◥ 
+ 1. Adaptive Angled Wedges (Auto-enabled on iTerm2, Ghostty, WezTerm, Kitty):
+ ◥[api-env]◣ ~/repos/my-service ◣ ⑂ feat/auth ± ◣ 
   > 
 
- 2. Style "blocks" (Pure ANSI solid blocks, zero font gaps in all terminals):
- [api-env]  ~/repos/my-service  ⑂ feat/auth ± 
-  > 
-
- 3. Style "pills" (Discrete spaced badges):
- [api-env]   ~/repos/my-service   ⑂ feat/auth ± 
+ 2. Adaptive Solid ANSI Blocks (Auto-fallback on Terminal.app, VS Code, Zed):
+ [api-env] ~/repos/my-service  ⑂ feat/auth ± 
   > 
 ```
 
@@ -32,9 +28,10 @@ Built to replace Oh My Zsh for developers and team leads who are tired of broken
 
 If you have ever supported developers, maintained internal developer platforms, or managed a team's workstations, you know the **Oh My Zsh problem**:
 
-1. **The Font Trap**:
+1. **The Font & Terminal Rendering Trap**:
    - Themes like Agnoster or Powerlevel10k require custom patched Nerd Fonts (`Meslo`, `FiraCode NF`). Without them, prompts break into missing glyph boxes `[?]`.
-   - **The Oh Your Zsh Solution**: Uses native angled text pointers (`◤`, `◣`, `◥`), branching tracks (`⑂`), detached state indicator (`->`), and Git status modifier (`±`). It renders identically and gorgeously in standard fonts without downloading or patching fonts.
+   - Even with Unicode triangles, some terminals (like iTerm2, Ghostty, WezTerm, Kitty) draw geometric shapes edge-to-edge via custom shaders, while others (like Apple Terminal.app, VS Code, Zed) render them through standard font bounding boxes—leaving vertical line-height gaps.
+   - **The Oh Your Zsh Adaptive Solution**: Automatically detects your terminal's rendering capabilities. On terminals with edge-to-edge geometric rendering, it uses native forward-slanted wedges (`◥`, `◣`, `◣`). On terminals that rely strictly on font metrics, it seamlessly falls back to pure full-height ANSI color blocks—zero font installation required, zero ugly gaps anywhere.
 2. **The "Black Box" Nightmare**:
    - Oh My Zsh contains over **100,000 lines of code across 300+ plugins**.
    - Obscure `precmd` hooks, magic paste handlers (`bracketed-paste-magic`), and auto-update daemons silently alter shell behavior.
@@ -44,9 +41,8 @@ If you have ever supported developers, maintained internal developer platforms, 
 
 ### The Oh Your Zsh Fix
 
-* **Native Angled Chevrons**: Uses 100% core-safe Unicode triangles (`◤`, `◣`, `◥`) creating forward-leaning parallel slashes (`/` `/` `/`) across every segment.
-* **Multiple Display Styles**: Choose between angled `wedges`, pure ANSI `blocks`, spaced `pills`, or Powerline `slanted`.
-* **Zero Mystery (< 100 lines of code)**: The core engine is a single, clean, readable shell script. Any team lead or developer can audit the entire system in 2 minutes. There are no background daemons, no silent network requests, and no secret hook overrides.
+* **Adaptive Wedge / Block Rendering**: Uses 100% core-safe Unicode triangles (`◥`, `◣`, `◣`) on terminals with custom geometric engines (iTerm2, Ghostty, WezTerm, Kitty) and pure ANSI blocks everywhere else.
+* **Zero Mystery (~100 lines of code)**: The core engine is a single, clean, readable shell script. Any team lead or developer can audit the entire system in 2 minutes. There are no background daemons, no silent network requests, and no secret hook overrides.
 * **Sub-5ms Instant Startup**: Pure native Zsh builtins and Git porcelain checks. No subshell cascades.
 * **Dynamic Git & Python Virtualenv Awareness**: Instant branch/commit tracking, clean (lime green) vs dirty (orange) background transitions, and integrated virtual environment detection with `VIRTUAL_ENV_DISABLE_PROMPT=1`.
 * **Fixes Terminal Glitches**: Permanently eliminates bracketed paste highlighting artifacts (`zle_highlight+=(paste:none)`).
@@ -88,7 +84,6 @@ You can keep your existing `~/.oh-my-zsh` folder intact and toggle between Oh My
 
    # --- Oh Your Zsh (Active) ---
    export OYZ="$HOME/.oh-your-zsh"
-   export OYZ_STYLE="wedges"  # "wedges", "blocks", "pills", or "slanted"
    source "$OYZ/oh-your-zsh.zsh"
    ```
 
@@ -124,20 +119,22 @@ To roll back at any time, run:
 
 ## 🎨 Styles & Themes
 
-### Prompt Styles (`OYZ_STYLE`)
+### Adaptive Terminal Detection (`OYZ_STYLE`)
 
-Set `OYZ_STYLE` in your `~/.zshrc` before sourcing:
+By default, Oh Your Zsh automatically inspects your terminal environment (including inside `tmux`):
+
+| Terminal | Auto Behavior | Reason |
+| :--- | :--- | :--- |
+| **iTerm2, Ghostty, WezTerm, Kitty** | **Angled Wedges (`◥`, `◣`, `◣`)** | Custom shader/graphics engine draws triangles edge-to-edge |
+| **Terminal.app, VS Code, Zed, Alacritty, SSH** | **Pure ANSI Blocks** | Prevents typographic font bounding-box gaps |
+
+You can also explicitly force either mode in `~/.zshrc` prior to sourcing:
 
 ```zsh
-export OYZ_STYLE="wedges" # Options: "wedges", "blocks", "pills", "slanted"
+export OYZ_STYLE="wedges" # Force angled wedges everywhere
+# or
+export OYZ_STYLE="blocks" # Force flat ANSI blocks everywhere
 ```
-
-| Style | Description | Font Requirement |
-| :--- | :--- | :--- |
-| **`wedges`** *(Default)* | **Flagship angled text pointers (`◤`, `◣`, `◥`)**. Parallel forward-leaning chevrons. | **Standard Unicode** |
-| **`blocks`** | Pure ANSI full-height solid color blocks with edge-to-edge rendering. | **None (Pure ANSI)** |
-| **`pills`** | Discrete modern badge pills with terminal background spacing. | **None (Pure ANSI)** |
-| **`slanted`** | Powerline chevrons (`` / ``). | Patched Nerd Font |
 
 ### Color Themes (`OYZ_THEME`)
 
@@ -166,8 +163,8 @@ Tested on macOS Apple Silicon and Linux:
 | :--- | :--- | :--- | :--- |
 | **Cold Startup Time** | ~320ms – 1,100ms | ~45ms | **< 4ms** |
 | **External Dependencies** | Git, Python/Ruby/Perl plugins, Curl | Rust binary + Nerd Font | **Zero (Native Zsh)** |
-| **Font Requirements** | Patched Nerd Fonts / Powerline | Patched Nerd Fonts | **None (Core Unicode)** |
-| **Codebase Size** | > 100,000 lines | > 40,000 lines (compiled) | **< 100 lines (Readable)** |
+| **Font Requirements** | Patched Nerd Fonts / Powerline | Patched Nerd Fonts | **None** |
+| **Codebase Size** | > 100,000 lines | > 40,000 lines (compiled) | **~100 lines (Readable)** |
 | **Support Overhead** | High (plugins conflict, hooks clash) | Medium (binary updates) | **Zero (What you see is what runs)** |
 
 ---
